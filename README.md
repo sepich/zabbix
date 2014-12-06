@@ -11,3 +11,6 @@ http://blog.sepa.spb.ru/2014/11/rabbitmq-internals-monitoring-by-zabbix.html
 
 * MySQL  
 http://blog.sepa.spb.ru/2014/12/mysql-internals-monitoring-by-zabbix.html
+
+* ElasticSearch  
+http://blog.sepa.spb.ru/2014/12/elasticsearch-internals-monitoring-by.html
