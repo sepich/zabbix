@@ -45,7 +45,7 @@ def main():
       for queue in call_api('queues'):
         num+=1
         if queue['name'].startswith("amq.gen-"): continue
-        for item in ['messages', 'messages_unacknowledged', 'consumers', 'message_stats.deliver', 'message_stats.redeliver']:
+        for item in ['messages', 'messages_unacknowledged', 'consumers', 'message_stats.publish', 'message_stats.deliver', 'message_stats.redeliver']:
           i=item.split('.')
           val=queue
           while len(i): val=val.get(i.pop(0),{})
