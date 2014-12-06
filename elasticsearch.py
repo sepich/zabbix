@@ -54,8 +54,8 @@ def getKeys(stats,traps):
   for t in traps:
     c=t.split('.')
     s=stats
-    while len(c):
-      s=s[c.pop(0)]
+    while len(c): s=s.get(c.pop(0),{})
+    if s=={}: continue
     out += "- es.{0} {1}\n".format(t,s)
   return out
 
@@ -68,7 +68,7 @@ def main():
     all = json.loads( f.read() )
     #only for current node
     for node_id in all['nodes'].keys():
-      if all['nodes'][node_id]['hostname'] == os.uname()[1]:
+      if all['nodes'][node_id]['hostname'].startswith( os.uname()[1] ):
         all = all['nodes'][node_id]
         if len(sys.argv)==1: print "node found"
   except:
