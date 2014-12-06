@@ -41,10 +41,17 @@ def main():
     #send all queues info as traps
     if sys.argv[2]=='uptime':
       out=''
+      num=0
       for queue in call_api('queues'):
+        num+=1
         if queue['name'].startswith("amq.gen-"): continue
-        for item in ['messages', 'messages_unacknowledged', 'consumers']:
-          out += "- rabbitmq[{0},{1},{2}] {3}\n".format(queue['vhost'], queue['name'], item, queue.get(item, 0))
+        for item in ['messages', 'messages_unacknowledged', 'consumers', 'message_stats.deliver', 'message_stats.redeliver']:
+          i=item.split('.')
+          val=queue
+          while len(i): val=val.get(i.pop(0),{})
+          if val=={}: continue
+          out += "- rabbitmq[{0},{1},{2}] {3}\n".format(queue['vhost'], queue['name'], item, val)
+      out += "- rabbitmq.queue.count {0}\n".format(num)
 
       #write data for zabbix sender
       try:
