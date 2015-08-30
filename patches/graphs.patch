@@ -1,16 +1,16 @@
 --- /usr/share/zabbix-orig/include/views/monitoring.charts.php  2015-03-10 02:54:06.000000000 -0700
-+++ /usr/share/zabbix/include/views/monitoring.charts.php 2015-08-30 01:25:39.480772676 -0700
-@@ -1,3 +1,71 @@
++++ /usr/share/zabbix/include/views/monitoring.charts.php 2015-08-30 04:46:22.986387079 -0700
+@@ -1,3 +1,74 @@
 +<script type="text/javascript">
 +  jQuery(function() {
-+    if(jQuery('#groupid option').length>50){
++    if(jQuery('#groupid option').length>25){
 +      //merge group names by left part
 +      jQuery('#groupid').hide();
 +      jQuery('#groupid').after('<select id="groups" class="input select">');
 +      jQuery('#groupid option').each(function(i){
 +        var name = jQuery(this).text(),
 +            id = jQuery(this).val();
-+        if(name.contains(' ')){
++        if(name.indexOf(' ') != -1 ){
 +          var left=jQuery(this).text().split(' ')[0];
 +          if(jQuery('#groups option[name="'+left+'"]').length) return;
 +          if(jQuery('#groupid option:contains("'+left+' ")').length>1){
@@ -30,7 +30,7 @@
 +        if(text.endsWith('>')){
 +          if(jQuery('#subgroups').length) jQuery('#subgroups').remove();
 +          jQuery('#groups').after('<select id="subgroups" class="input select">');
-+          jQuery('#subgroups').append('<option></option>');
++          //jQuery('#subgroups').append('<option></option>');
 +          jQuery('#groupid option:contains("'+group+' ")').each(function(i){
 +            var name = jQuery(this).text(),
 +                id = jQuery(this).val();
@@ -38,6 +38,9 @@
 +              name=name.substring(len);
 +              jQuery('#subgroups').append('<option name="'+name+'" value="'+id+'">'+name+'</option>');
 +            }
++          });
++          jQuery('#subgroups').focus(function(){
++            this.selectedIndex = -1;
 +          });
 +          jQuery('#subgroups').change(function(){
 +            var val=jQuery("#subgroups option:selected").val();
@@ -62,7 +65,7 @@
 +        var left=text.split(' ')[0];
 +        jQuery('#groups option[name="'+left+'"]').attr('selected','selected');
 +        jQuery('#groups').trigger('change');
-+        jQuery('#subgroups option')[0].remove();
++        //jQuery('#subgroups option')[0].remove();
 +        jQuery('#subgroups option[value="'+val+'"]').attr('selected','selected');
 +      }
 +    }
@@ -72,7 +75,7 @@
  <?php
  /*
  ** Zabbix
-@@ -18,7 +86,6 @@
+@@ -18,7 +89,6 @@
  ** Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  **/
 
@@ -80,7 +83,7 @@
  $chartsWidget = new CWidget('hat_charts');
  $chartForm = new CForm('get');
  $chartForm->addVar('fullscreen', $this->data['fullscreen']);
-@@ -49,7 +116,8 @@
+@@ -49,7 +119,8 @@
  );
  $chartsWidget->addItem(BR());
 
@@ -90,7 +93,7 @@
   // append chart to widget
   $screen = CScreenBuilder::getScreen(array(
     'resourcetype' => SCREEN_RESOURCE_CHART,
-@@ -68,7 +136,8 @@
+@@ -68,7 +139,8 @@
     'profileIdx' => $screen->profileIdx
   ));
  }
@@ -100,7 +103,7 @@
   $screen = new CScreenBuilder();
   CScreenBuilder::insertScreenStandardJs(array(
     'timeline' => $screen->timeline
-@@ -76,5 +145,74 @@
+@@ -76,5 +148,74 @@
 
   $chartsWidget->addItem(new CTableInfo(_('No graphs found.')));
  }
@@ -175,6 +178,7 @@
 +}
 
  return $chartsWidget;
+
 diff -ur zabbix-22-test/include/classes/graphdraw/CLineGraphDraw.php zabbix-22-custom/include/classes/graphdraw/CLineGraphDraw.php
 --- zabbix-22-test/include/classes/graphdraw/CLineGraphDraw.php	2015-03-10 04:08:58.550155192 -0700
 +++ zabbix-22-custom/include/classes/graphdraw/CLineGraphDraw.php	2015-03-10 04:09:54.447239629 -0700
