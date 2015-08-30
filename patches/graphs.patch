@@ -1,3 +1,180 @@
+--- /usr/share/zabbix-orig/include/views/monitoring.charts.php  2015-03-10 02:54:06.000000000 -0700
++++ /usr/share/zabbix/include/views/monitoring.charts.php 2015-08-30 01:25:39.480772676 -0700
+@@ -1,3 +1,71 @@
++<script type="text/javascript">
++  jQuery(function() {
++    if(jQuery('#groupid option').length>50){
++      //merge group names by left part
++      jQuery('#groupid').hide();
++      jQuery('#groupid').after('<select id="groups" class="input select">');
++      jQuery('#groupid option').each(function(i){
++        var name = jQuery(this).text(),
++            id = jQuery(this).val();
++        if(name.contains(' ')){
++          var left=jQuery(this).text().split(' ')[0];
++          if(jQuery('#groups option[name="'+left+'"]').length) return;
++          if(jQuery('#groupid option:contains("'+left+' ")').length>1){
++            jQuery('#groups').append('<option name="'+left+'">'+left+' &gt;</option>');
++            return;
++          }
++        }
++        jQuery('#groups').append('<option name="'+name+'" value="'+id+'">'+name+'</option>');
++      });
++
++      //show subgroup select for merged groups
++      jQuery('#groups').change(function(){
++        var text=jQuery("#groups option:selected" ).text(),
++            group=jQuery("#groups option:selected" ).attr('name'),
++            len=group.length + 1,
++            val=jQuery("#groups option:selected" ).val();
++        if(text.endsWith('>')){
++          if(jQuery('#subgroups').length) jQuery('#subgroups').remove();
++          jQuery('#groups').after('<select id="subgroups" class="input select">');
++          jQuery('#subgroups').append('<option></option>');
++          jQuery('#groupid option:contains("'+group+' ")').each(function(i){
++            var name = jQuery(this).text(),
++                id = jQuery(this).val();
++            if(name.startsWith(group+' ')){
++              name=name.substring(len);
++              jQuery('#subgroups').append('<option name="'+name+'" value="'+id+'">'+name+'</option>');
++            }
++          });
++          jQuery('#subgroups').change(function(){
++            var val=jQuery("#subgroups option:selected").val();
++            if(val.length){
++              jQuery('#groupid option[value="'+val+'"]').attr('selected','selected');
++              jQuery('#groupid').trigger('change');
++            }
++          });
++        }
++        else {
++          jQuery('#groupid option[value="'+val+'"]').attr('selected','selected');
++          jQuery('#groupid').trigger('change');
++        }
++      });
++
++      //restore selection on page load
++      var val=jQuery("#groupid option:selected" ).val(),
++          i=jQuery('#groups option[value="'+val+'"]'),
++          text=jQuery("#groupid option:selected" ).text();
++      if(i.length) i.attr('selected','selected');
++      else{
++        var left=text.split(' ')[0];
++        jQuery('#groups option[name="'+left+'"]').attr('selected','selected');
++        jQuery('#groups').trigger('change');
++        jQuery('#subgroups option')[0].remove();
++        jQuery('#subgroups option[value="'+val+'"]').attr('selected','selected');
++      }
++    }
++  });
++</script>
++
+ <?php
+ /*
+ ** Zabbix
+@@ -18,7 +86,6 @@
+ ** Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+ **/
+
+-
+ $chartsWidget = new CWidget('hat_charts');
+ $chartForm = new CForm('get');
+ $chartForm->addVar('fullscreen', $this->data['fullscreen']);
+@@ -49,7 +116,8 @@
+ );
+ $chartsWidget->addItem(BR());
+
+-if (!empty($this->data['graphid'])) {
++//single graph selected, host selected
++if(!empty($this->data['graphid']) && $this->data['pageFilter']->hostid) {
+  // append chart to widget
+  $screen = CScreenBuilder::getScreen(array(
+    'resourcetype' => SCREEN_RESOURCE_CHART,
+@@ -68,7 +136,8 @@
+    'profileIdx' => $screen->profileIdx
+  ));
+ }
+-else {
++//nothing selected
++else if(empty($this->data['graphid']) && !$this->data['pageFilter']->hostid) {
+  $screen = new CScreenBuilder();
+  CScreenBuilder::insertScreenStandardJs(array(
+    'timeline' => $screen->timeline
+@@ -76,5 +145,74 @@
+
+  $chartsWidget->addItem(new CTableInfo(_('No graphs found.')));
+ }
++//cumulative graphs
++else {
++  //host not selected, graph selected
++  if (!empty($this->data['graphid']) && !$this->data['pageFilter']->hostid) {
++    //all servers
++    if(!$this->data['pageFilter']->groupid){
++      $options = array(
++        'output' => array('graphid', 'name', 'graphtype'),
++        //'limit' => 50,
++        'filter' => array('name' => $this->data['pageFilter']->graphs[$this->data['graphid']]['name']),
++        'templated' => false,
++        'sortfield' => 'name'
++      );
++    }
++    //group selected
++    else{
++      $options = array(
++        'output' => array('graphid', 'name', 'graphtype'),
++        'groupids' => $this->data['pageFilter']->groupid,
++        'filter' => array('name' => $this->data['pageFilter']->graphs[$this->data['graphid']]['name']),
++        'templated' => false,
++        'sortfield' => 'name'
++      );
++    }
++  }
++  //host selected, graph not selected
++  else if ($this->data['pageFilter']->hostid != 0) {
++    $options = array(
++      'output' => array('graphid', 'name', 'graphtype'),
++      'hostids' => $this->data['pageFilter']->hostid,
++      'sortfield' => 'name'
++    );
++  }
++  $chartTable = new CTable(_('No graphs defined.'), 'screen_view');
++
++  $graphs = API::Graph()->get($options);
++  CWebUser::$data['rows_per_page'] = 20;
++  $paging = getPagingLine($graphs);
++
++  $i=0;
++  $newColumns = array();
++  foreach ($graphs as $graph) {
++    $screen = CScreenBuilder::getScreen(array(
++     'resourcetype' => SCREEN_RESOURCE_GRAPH,
++     'screenitem' => array('width' => '600', 'height' => '200', 'resourceid'=>$graph['graphid'], 'screenitemid' => $graph['graphid'], 'screenid'=>1, 'dynamic'=>0),
++     //'resourcetype' => SCREEN_RESOURCE_CHART, //uncomment to have selectable graphs
++     'graphid' => $graph['graphid'],
++                 'profileIdx' => 'web.screens',
++                 'profileIdx2' => $graph['graphid'],
++                 'dataId' => 'graph_full_' . $graph['graphid']
++    ));
++    $newColumn = new CCol($screen->get(), 'cntr_top screenitem');
++    array_push($newColumns, $newColumn);
++    if($i){
++      $chartTable->addRow(new CRow($newColumns));
++      $i=0;
++      $newColumns = array();
++    }
++    else $i++;
++  }
++  if($i){$chartTable->addRow(new CRow($newColumns));}
++
++  $chartsWidget->addItem(array($paging,$chartTable,$paging));
++
++  CScreenBuilder::insertScreenStandardJs(array(
++         'timeline' => $screen->timeline,
++         'profileIdx' => $screen->profileIdx
++  ));
++}
+
+ return $chartsWidget;
 diff -ur zabbix-22-test/include/classes/graphdraw/CLineGraphDraw.php zabbix-22-custom/include/classes/graphdraw/CLineGraphDraw.php
 --- zabbix-22-test/include/classes/graphdraw/CLineGraphDraw.php	2015-03-10 04:08:58.550155192 -0700
 +++ zabbix-22-custom/include/classes/graphdraw/CLineGraphDraw.php	2015-03-10 04:09:54.447239629 -0700
@@ -123,118 +300,6 @@ diff -ur zabbix-22-test/include/classes/graphdraw/CLineGraphDraw.php zabbix-22-c
 
  		unset($this->items, $this->data);
 
-diff -ur zabbix-22-test/include/classes/graphdraw/CLineGraphDraw.php.orig zabbix-22-custom/include/classes/graphdraw/CLineGraphDraw.php.orig
---- zabbix-22-test/include/classes/graphdraw/CLineGraphDraw.php.orig	2015-03-10 04:08:01.917057192 -0700
-+++ zabbix-22-custom/include/classes/graphdraw/CLineGraphDraw.php.orig	2015-03-10 04:09:54.435239398 -0700
-@@ -34,7 +34,7 @@
- 		$this->skipRightScale = 0; // in case if right axis should be drawn but doesn't contain any data
- 		$this->ymin_itemid = 0;
- 		$this->ymax_itemid = 0;
--		$this->legendOffsetY = 90;
-+		$this->legendOffsetY = 80;
- 		$this->percentile = array(
- 			'left' => array(
- 				'percent' => 0, // draw percentage line
-@@ -63,18 +63,20 @@
- 	// PRE CONFIG:	ADD / SET / APPLY
- 	/********************************************************************************************************/
- 	public function updateShifts() {
--		if ($this->yaxisleft == 1 && $this->yaxisright == 1) {
-+		/*if ($this->yaxisleft == 1 && $this->yaxisright == 1) {
- 			$this->shiftXleft = 85;
- 			$this->shiftXright = 85;
- 		}
- 		elseif ($this->yaxisleft == 1) {
--			$this->shiftXleft = 85;
-+			$this->shiftXleft = 55;
- 			$this->shiftXright = 30;
- 		}
- 		elseif ($this->yaxisright == 1) {
- 			$this->shiftXleft = 30;
- 			$this->shiftXright = 85;
--		}
-+		}*/
-+		$this->shiftXleft = 65;
-+		$this->shiftXright = 65;
- 	}
-
- 	public function getShifts() {
-@@ -1452,6 +1454,7 @@
- 			$units = null;
- 			$unitsLong = null;
- 			$byteStep = false;
-+			$font_size = 8;
-
- 			for ($item = 0; $item < $this->num; $item++) {
- 				if ($this->items[$item]['axisside'] == $side) {
-@@ -1492,7 +1495,7 @@
-
- 				imageText(
- 					$this->im,
--					9,
-+					$font_size,
- 					90,
- 					$tmpX,
- 					$tmpY,
-@@ -1587,7 +1590,7 @@
-
- 				if ($side == GRAPH_YAXIS_SIDE_LEFT) {
- 					$dims = imageTextSize(8, 0, $str);
--					$posX = $this->shiftXleft - $dims['width'] - 9;
-+					$posX = $this->shiftXleft - $dims['width'] - 4;
- 				}
- 				else {
- 					$posX = $this->sizeX + $this->shiftXleft + 12;
-@@ -1598,7 +1601,7 @@
-
- 				imageText(
- 					$this->im,
--					8,
-+					$font_size,
- 					0,
- 					$posX,
- 					$posY,
-@@ -1629,7 +1632,7 @@
-
- 			imageText(
- 				$this->im,
--				8,
-+				$font_size,
- 				0,
- 				$posX,
- 				$this->shiftY + 4,
-@@ -1790,14 +1793,14 @@
- 	}
-
- 	protected function drawLegend() {
--		$leftXShift = 20;
-+		$leftXShift = 68;
- 		$units = array('left' => 0, 'right' => 0);
-
- 		// draw item legend
- 		$legend = new CImageTextTable($this->im, $leftXShift - 5, $this->sizeY + $this->shiftY + $this->legendOffsetY);
- 		$legend->color = $this->getColor($this->graphtheme['textcolor'], 0);
- 		$legend->rowheight = 14;
--		$legend->fontsize = 9;
-+		$legend->fontsize = 11;
-
- 		// item legend table header
- 		$row = array(
-@@ -2480,12 +2483,12 @@
- 			$this->drawLegend();
- 		}
-
--		$this->drawLogo();
-+		//$this->drawLogo();
-
- 		$str = sprintf('%0.2f', microtime(true) - $start_time);
- 		$str = _s('Data from %1$s. Generated in %2$s sec.', $this->dataFrom, $str);
- 		$strSize = imageTextSize(6, 0, $str);
--		imageText($this->im, 6, 0, $this->fullSizeX - $strSize['width'] - 5, $this->fullSizeY - 5, $this->getColor('Gray'), $str);
-+		imageText($this->im, 6, 0, 62, $this->fullSizeY - 5, $this->getColor('Gray'), $str);
-
- 		unset($this->items, $this->data);
-
 diff -ur zabbix-22-test/include/defines.inc.php zabbix-22-custom/include/defines.inc.php
 --- zabbix-22-test/include/defines.inc.php	2015-03-10 04:08:58.550155192 -0700
 +++ zabbix-22-custom/include/defines.inc.php	2015-03-10 04:09:54.507240795 -0700
@@ -270,180 +335,3 @@ diff -ur zabbix-22-test/js/gtlc.js zabbix-22-custom/js/gtlc.js
 +//if(this.onSelect(this.dom.input.value) && !GK) this.dom.input.form.submit();
 +       if(this.dom.input.value.length) this.dom.input.form.submit();
  },
---- /usr/share/zabbix-orig/include/views/monitoring.charts.php	2015-03-10 02:54:06.000000000 -0700
-+++ /usr/share/zabbix/include/views/monitoring.charts.php	2015-08-30 01:25:39.480772676 -0700
-@@ -1,3 +1,71 @@
-+<script type="text/javascript">
-+  jQuery(function() {
-+    if(jQuery('#groupid option').length>25){
-+      //merge group names by left part
-+      jQuery('#groupid').hide();
-+      jQuery('#groupid').after('<select id="groups" class="input select">');
-+      jQuery('#groupid option').each(function(i){
-+        var name = jQuery(this).text(),
-+            id = jQuery(this).val();
-+        if(name.contains(' ')){
-+          var left=jQuery(this).text().split(' ')[0];
-+          if(jQuery('#groups option[name="'+left+'"]').length) return;
-+          if(jQuery('#groupid option:contains("'+left+' ")').length>1){
-+            jQuery('#groups').append('<option name="'+left+'">'+left+' &gt;</option>');
-+            return;
-+          }
-+        }
-+        jQuery('#groups').append('<option name="'+name+'" value="'+id+'">'+name+'</option>');
-+      });
-+
-+      //show subgroup select for merged groups
-+      jQuery('#groups').change(function(){
-+        var text=jQuery("#groups option:selected" ).text(),
-+            group=jQuery("#groups option:selected" ).attr('name'),
-+            len=group.length + 1,
-+            val=jQuery("#groups option:selected" ).val();
-+        if(text.endsWith('>')){
-+          if(jQuery('#subgroups').length) jQuery('#subgroups').remove();
-+          jQuery('#groups').after('<select id="subgroups" class="input select">');
-+          jQuery('#subgroups').append('<option></option>');
-+          jQuery('#groupid option:contains("'+group+' ")').each(function(i){
-+            var name = jQuery(this).text(),
-+                id = jQuery(this).val();
-+            if(name.startsWith(group+' ')){
-+              name=name.substring(len);
-+              jQuery('#subgroups').append('<option name="'+name+'" value="'+id+'">'+name+'</option>');
-+            }
-+          });
-+          jQuery('#subgroups').change(function(){
-+            var val=jQuery("#subgroups option:selected").val();
-+            if(val.length){
-+              jQuery('#groupid option[value="'+val+'"]').attr('selected','selected');
-+              jQuery('#groupid').trigger('change');
-+            }
-+          });
-+        }
-+        else {
-+          jQuery('#groupid option[value="'+val+'"]').attr('selected','selected');
-+          jQuery('#groupid').trigger('change');
-+        }
-+      });
-+
-+      //restore selection on page load
-+      var val=jQuery("#groupid option:selected" ).val(),
-+          i=jQuery('#groups option[value="'+val+'"]'),
-+          text=jQuery("#groupid option:selected" ).text();
-+      if(i.length) i.attr('selected','selected');
-+      else{
-+        var left=text.split(' ')[0];
-+        jQuery('#groups option[name="'+left+'"]').attr('selected','selected');
-+        jQuery('#groups').trigger('change');
-+        jQuery('#subgroups option')[0].remove();
-+        jQuery('#subgroups option[value="'+val+'"]').attr('selected','selected');
-+      }
-+    }
-+  });
-+</script>
-+
- <?php
- /*
- ** Zabbix
-@@ -18,7 +86,6 @@
- ** Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
- **/
-
--
- $chartsWidget = new CWidget('hat_charts');
- $chartForm = new CForm('get');
- $chartForm->addVar('fullscreen', $this->data['fullscreen']);
-@@ -49,7 +116,8 @@
- );
- $chartsWidget->addItem(BR());
-
--if (!empty($this->data['graphid'])) {
-+//single graph selected, host selected
-+if(!empty($this->data['graphid']) && $this->data['pageFilter']->hostid) {
- 	// append chart to widget
- 	$screen = CScreenBuilder::getScreen(array(
- 		'resourcetype' => SCREEN_RESOURCE_CHART,
-@@ -68,7 +136,8 @@
- 		'profileIdx' => $screen->profileIdx
- 	));
- }
--else {
-+//nothing selected
-+else if(empty($this->data['graphid']) && !$this->data['pageFilter']->hostid) {
- 	$screen = new CScreenBuilder();
- 	CScreenBuilder::insertScreenStandardJs(array(
- 		'timeline' => $screen->timeline
-@@ -76,5 +145,74 @@
-
- 	$chartsWidget->addItem(new CTableInfo(_('No graphs found.')));
- }
-+//cumulative graphs
-+else {
-+  //host not selected, graph selected
-+  if (!empty($this->data['graphid']) && !$this->data['pageFilter']->hostid) {
-+    //all servers
-+    if(!$this->data['pageFilter']->groupid){
-+      $options = array(
-+        'output' => array('graphid', 'name', 'graphtype'),
-+        //'limit' => 50,
-+        'filter' => array('name' => $this->data['pageFilter']->graphs[$this->data['graphid']]['name']),
-+        'templated' => false,
-+        'sortfield' => 'name'
-+      );
-+    }
-+    //group selected
-+    else{
-+      $options = array(
-+        'output' => array('graphid', 'name', 'graphtype'),
-+        'groupids' => $this->data['pageFilter']->groupid,
-+        'filter' => array('name' => $this->data['pageFilter']->graphs[$this->data['graphid']]['name']),
-+        'templated' => false,
-+        'sortfield' => 'name'
-+      );
-+    }
-+  }
-+  //host selected, graph not selected
-+  else if ($this->data['pageFilter']->hostid != 0) {
-+    $options = array(
-+      'output' => array('graphid', 'name', 'graphtype'),
-+      'hostids' => $this->data['pageFilter']->hostid,
-+      'sortfield' => 'name'
-+    );
-+  }
-+  $chartTable = new CTable(_('No graphs defined.'), 'screen_view');
-+
-+  $graphs = API::Graph()->get($options);
-+  CWebUser::$data['rows_per_page'] = 20;
-+  $paging = getPagingLine($graphs);
-+
-+  $i=0;
-+  $newColumns = array();
-+  foreach ($graphs as $graph) {
-+    $screen = CScreenBuilder::getScreen(array(
-+     'resourcetype' => SCREEN_RESOURCE_GRAPH,
-+     'screenitem' => array('width' => '600', 'height' => '200', 'resourceid'=>$graph['graphid'], 'screenitemid' => $graph['graphid'], 'screenid'=>1, 'dynamic'=>0),
-+     //'resourcetype' => SCREEN_RESOURCE_CHART, //uncomment to have selectable graphs
-+     'graphid' => $graph['graphid'],
-+                 'profileIdx' => 'web.screens',
-+                 'profileIdx2' => $graph['graphid'],
-+                 'dataId' => 'graph_full_' . $graph['graphid']
-+    ));
-+    $newColumn = new CCol($screen->get(), 'cntr_top screenitem');
-+    array_push($newColumns, $newColumn);
-+    if($i){
-+      $chartTable->addRow(new CRow($newColumns));
-+      $i=0;
-+      $newColumns = array();
-+    }
-+    else $i++;
-+  }
-+  if($i){$chartTable->addRow(new CRow($newColumns));}
-+
-+  $chartsWidget->addItem(array($paging,$chartTable,$paging));
-+
-+  CScreenBuilder::insertScreenStandardJs(array(
-+         'timeline' => $screen->timeline,
-+         'profileIdx' => $screen->profileIdx
-+  ));
-+}
-
- return $chartsWidget;
