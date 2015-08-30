@@ -2,6 +2,8 @@ Zabbix extensions
 ======
 
 Read more about each extension below:
+* Zabbix graphs improvements patch  
+http://blog.sepa.spb.ru/2015/08/zabbix-graphs-improvements-patch.html
 
 * Network sockets  
 http://blog.sepa.spb.ru/2014/11/zabbix-network-socket-state-statistics.html
