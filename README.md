@@ -16,3 +16,6 @@ http://blog.sepa.spb.ru/2014/12/mysql-internals-monitoring-by-zabbix.html
 
 * ElasticSearch  
 http://blog.sepa.spb.ru/2014/12/elasticsearch-internals-monitoring-by.html
+
+* AWS ELB using CloudWatch  
+http://blog.sepa.spb.ru/2015/09/aws-elb-monitoring-by-zabbix-using.html
