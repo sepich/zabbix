@@ -37,6 +37,9 @@ if args.discover:
 if args.elb:
   c=boto.ec2.cloudwatch.connect_to_region(args.region, aws_access_key_id=aws_key, aws_secret_access_key=aws_secret, debug=args.verbose)
 
+  #amazon uses UTC at cloudwatch
+  os.environ['TZ'] = 'UTC'
+  time.tzset()
   out=[]
   metrics={
   'RequestCount':'Sum',
