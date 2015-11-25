@@ -79,9 +79,13 @@ def main():
     f = requests.get("http://localhost:9200/_nodes/_local/stats?all=true")
     all = f.json()
     
+    fqdn = socket.getfqdn()
+    host = fqdn.split('.')[0]
     # only for current node
     for node_id in all['nodes']:
-      if all['nodes'][node_id]['host'].startswith(os.uname()[1]):
+      host_name = all['nodes'][node_id]['host']
+      node_name = all['nodes'][node_id]['name']
+      if host_name == fqdn or host_name == host or node_name == fqdn or node_name == host:
         node = all['nodes'][node_id]
         if len(sys.argv) == 1: 
           print "node found"
