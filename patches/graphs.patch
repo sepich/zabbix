@@ -1,5 +1,161 @@
---- /usr/share/zabbix-orig/include/views/monitoring.charts.php  2015-03-10 02:54:06.000000000 -0700
-+++ /usr/share/zabbix/include/views/monitoring.charts.php 2015-08-30 04:46:22.986387079 -0700
+diff -ur A/include/classes/graphdraw/CLineGraphDraw.php B/include/classes/graphdraw/CLineGraphDraw.php
+--- A/include/classes/graphdraw/CLineGraphDraw.php	2015-12-09 13:04:08.000000000 +0100
++++ B/include/classes/graphdraw/CLineGraphDraw.php	2015-12-09 13:10:21.000000000 +0100
+@@ -34,7 +34,7 @@
+ 		$this->skipRightScale = 0; // in case if right axis should be drawn but doesn't contain any data
+ 		$this->ymin_itemid = 0;
+ 		$this->ymax_itemid = 0;
+-		$this->legendOffsetY = 90;
++		$this->legendOffsetY = 80;
+ 		$this->percentile = array(
+ 			'left' => array(
+ 				'percent' => 0, // draw percentage line
+@@ -63,18 +63,20 @@
+ 	// PRE CONFIG:	ADD / SET / APPLY
+ 	/********************************************************************************************************/
+ 	public function updateShifts() {
+-		if ($this->yaxisleft == 1 && $this->yaxisright == 1) {
++		/*if ($this->yaxisleft == 1 && $this->yaxisright == 1) {
+ 			$this->shiftXleft = 85;
+ 			$this->shiftXright = 85;
+ 		}
+ 		elseif ($this->yaxisleft == 1) {
+-			$this->shiftXleft = 85;
++			$this->shiftXleft = 55;
+ 			$this->shiftXright = 30;
+ 		}
+ 		elseif ($this->yaxisright == 1) {
+ 			$this->shiftXleft = 30;
+ 			$this->shiftXright = 85;
+-		}
++		}*/
++		$this->shiftXleft = 65;
++		$this->shiftXright = 65;
+ 	}
+ 
+ 	public function getShifts() {
+@@ -1483,6 +1485,7 @@
+ 			$units = null;
+ 			$unitsLong = null;
+ 			$byteStep = false;
++			$font_size = 8;
+ 
+ 			for ($item = 0; $item < $this->num; $item++) {
+ 				if ($this->items[$item]['axisside'] == $side) {
+@@ -1523,7 +1526,7 @@
+ 
+ 				imageText(
+ 					$this->im,
+-					9,
++					$font_size,
+ 					90,
+ 					$tmpX,
+ 					$tmpY,
+@@ -1618,7 +1621,7 @@
+ 
+ 				if ($side == GRAPH_YAXIS_SIDE_LEFT) {
+ 					$dims = imageTextSize(8, 0, $str);
+-					$posX = $this->shiftXleft - $dims['width'] - 9;
++					$posX = $this->shiftXleft - $dims['width'] - 4;
+ 				}
+ 				else {
+ 					$posX = $this->sizeX + $this->shiftXleft + 12;
+@@ -1629,7 +1632,7 @@
+ 
+ 				imageText(
+ 					$this->im,
+-					8,
++					$font_size,
+ 					0,
+ 					$posX,
+ 					$posY,
+@@ -1660,7 +1663,7 @@
+ 
+ 			imageText(
+ 				$this->im,
+-				8,
++				$font_size,
+ 				0,
+ 				$posX,
+ 				$this->shiftY + 4,
+@@ -1821,14 +1824,14 @@
+ 	}
+ 
+ 	protected function drawLegend() {
+-		$leftXShift = 20;
++		$leftXShift = 65;
+ 		$units = array('left' => 0, 'right' => 0);
+ 
+ 		// draw item legend
+ 		$legend = new CImageTextTable($this->im, $leftXShift - 5, $this->sizeY + $this->shiftY + $this->legendOffsetY);
+ 		$legend->color = $this->getColor($this->graphtheme['textcolor'], 0);
+-		$legend->rowheight = 14;
+-		$legend->fontsize = 9;
++		$legend->rowheight = 10;
++		$legend->fontsize = 11;
+ 
+ 		// item legend table header
+ 		$row = array(
+@@ -2391,7 +2394,7 @@
+ 		$this->fullSizeY = $this->sizeY + $this->shiftY + $this->legendOffsetY;
+ 
+ 		if ($this->drawLegend) {
+-			$this->fullSizeY += 14 * ($this->num + 1 + (($this->sizeY < 120) ? 0 : count($this->triggers))) + 8;
++			$this->fullSizeY += 15 * ($this->num + 1 + (($this->sizeY < 120) ? 0 : count($this->triggers))) + 8;
+ 		}
+ 
+ 		// if graph height is big enough, we reserve space for percent line legend
+@@ -2513,12 +2516,12 @@
+ 			$this->drawLegend();
+ 		}
+ 
+-		$this->drawLogo();
++		//$this->drawLogo();
+ 
+ 		$str = sprintf('%0.2f', microtime(true) - $start_time);
+ 		$str = _s('Data from %1$s. Generated in %2$s sec.', $this->dataFrom, $str);
+ 		$strSize = imageTextSize(6, 0, $str);
+-		imageText($this->im, 6, 0, $this->fullSizeX - $strSize['width'] - 5, $this->fullSizeY - 5, $this->getColor('Gray'), $str);
++		imageText($this->im, 6, 0, 62, $this->fullSizeY - 5, $this->getColor('Gray'), $str);
+ 
+ 		unset($this->items, $this->data);
+ 
+diff -ur A/include/classes/pagefilter/CPageFilter.php B/include/classes/pagefilter/CPageFilter.php
+--- A/include/classes/pagefilter/CPageFilter.php	2015-12-09 13:04:09.000000000 +0100
++++ B/include/classes/pagefilter/CPageFilter.php	2015-12-09 14:07:41.673432586 +0100
+@@ -525,9 +525,15 @@
+ 			$options = zbx_array_merge($def_ptions, $options);
+ 			$graphs = API::Graph()->get($options);
+ 			order_result($graphs, 'name');
+-
+-			foreach ($graphs as $graph) {
+-				$this->data['graphs'][$graph['graphid']] = $graph;
++			
++                        if ($this->hostsAll) {
++                            foreach ($graphs as $graph) {
++                                    $this->data['graphs'][$graph['name']] = $graph;
++                            }
++			} else {
++                            foreach ($graphs as $graph) {
++                                    $this->data['graphs'][$graph['graphid']] = $graph;
++                            }
+ 			}
+ 
+ 			// no graphid provided
+diff -ur A/include/defines.inc.php B/include/defines.inc.php
+--- A/include/defines.inc.php	2015-12-09 13:04:09.000000000 +0100
++++ B/include/defines.inc.php	2015-12-09 13:21:02.000000000 +0100
+@@ -42,6 +42,7 @@
+ 
+ define('ZBX_FONTPATH',				realpath('fonts')); // where to search for font (GD > 2.0.18)
+ define('ZBX_GRAPH_FONT_NAME',		'graphfont'); // font file name
++define('ZBX_GRAPH_FONT_NAME',           'calibri');
+ define('ZBX_GRAPH_LEGEND_HEIGHT',	120); // when graph height is less then this value, some legend will not show up
+ 
+ define('ZBX_SCRIPT_TIMEOUT',		60); // in seconds
+diff -ur A/include/views/monitoring.charts.php B/include/views/monitoring.charts.php
+--- A/include/views/monitoring.charts.php	2015-12-09 13:04:03.000000000 +0100
++++ B/include/views/monitoring.charts.php	2015-12-09 13:13:56.000000000 +0100
 @@ -1,3 +1,74 @@
 +<script type="text/javascript">
 +  jQuery(function() {
@@ -78,7 +234,7 @@
 @@ -18,7 +89,6 @@
  ** Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  **/
-
+ 
 -
  $chartsWidget = new CWidget('hat_charts');
  $chartForm = new CForm('get');
@@ -86,26 +242,26 @@
 @@ -49,7 +119,8 @@
  );
  $chartsWidget->addItem(BR());
-
+ 
 -if (!empty($this->data['graphid'])) {
 +//single graph selected, host selected
 +if(!empty($this->data['graphid']) && $this->data['pageFilter']->hostid) {
-  // append chart to widget
-  $screen = CScreenBuilder::getScreen(array(
-    'resourcetype' => SCREEN_RESOURCE_CHART,
+ 	// append chart to widget
+ 	$screen = CScreenBuilder::getScreen(array(
+ 		'resourcetype' => SCREEN_RESOURCE_CHART,
 @@ -68,7 +139,8 @@
-    'profileIdx' => $screen->profileIdx
-  ));
+ 		'profileIdx' => $screen->profileIdx
+ 	));
  }
 -else {
 +//nothing selected
 +else if(empty($this->data['graphid']) && !$this->data['pageFilter']->hostid) {
-  $screen = new CScreenBuilder();
-  CScreenBuilder::insertScreenStandardJs(array(
-    'timeline' => $screen->timeline
+ 	$screen = new CScreenBuilder();
+ 	CScreenBuilder::insertScreenStandardJs(array(
+ 		'timeline' => $screen->timeline
 @@ -76,5 +148,74 @@
-
-  $chartsWidget->addItem(new CTableInfo(_('No graphs found.')));
+ 
+ 	$chartsWidget->addItem(new CTableInfo(_('No graphs found.')));
  }
 +//cumulative graphs
 +else {
@@ -176,166 +332,17 @@
 +         'profileIdx' => $screen->profileIdx
 +  ));
 +}
-
+ 
  return $chartsWidget;
-
-diff -ur zabbix-22-test/include/classes/graphdraw/CLineGraphDraw.php zabbix-22-custom/include/classes/graphdraw/CLineGraphDraw.php
---- zabbix-22-test/include/classes/graphdraw/CLineGraphDraw.php	2015-03-10 04:08:58.550155192 -0700
-+++ zabbix-22-custom/include/classes/graphdraw/CLineGraphDraw.php	2015-03-10 04:09:54.447239629 -0700
-@@ -35,7 +35,7 @@
- 		$this->skipRightScale = 0; // in case if right axis should be drawn but doesn't contain any data
- 		$this->ymin_itemid = 0;
- 		$this->ymax_itemid = 0;
--		$this->legendOffsetY = 90;
-+		$this->legendOffsetY = 80;
- 		$this->percentile = array(
- 			'left' => array(
- 				'percent' => 0, // draw percentage line
-@@ -74,18 +74,20 @@
- 	// PRE CONFIG:	ADD / SET / APPLY
- 	/********************************************************************************************************/
- 	public function updateShifts() {
--		if ($this->yaxisleft == 1 && $this->yaxisright == 1) {
-+		/*if ($this->yaxisleft == 1 && $this->yaxisright == 1) {
- 			$this->shiftXleft = 85;
- 			$this->shiftXright = 85;
- 		}
- 		elseif ($this->yaxisleft == 1) {
--			$this->shiftXleft = 85;
-+			$this->shiftXleft = 55;
- 			$this->shiftXright = 30;
- 		}
- 		elseif ($this->yaxisright == 1) {
- 			$this->shiftXleft = 30;
- 			$this->shiftXright = 85;
--		}
-+		}*/
-+		$this->shiftXleft = 65;
-+		$this->shiftXright = 65;
- 	}
-
- 	public function getShifts() {
-@@ -1456,6 +1458,7 @@
- 			$units = null;
- 			$unitsLong = null;
- 			$byteStep = false;
-+			$font_size = 8;
-
- 			for ($item = 0; $item < $this->num; $item++) {
- 				if ($this->items[$item]['axisside'] == $side) {
-@@ -1496,7 +1499,7 @@
-
- 				imageText(
- 					$this->im,
--					9,
-+					$font_size,
- 					90,
- 					$tmpX,
- 					$tmpY,
-@@ -1591,7 +1594,7 @@
-
- 				if ($side == GRAPH_YAXIS_SIDE_LEFT) {
- 					$dims = imageTextSize(8, 0, $str);
--					$posX = $this->shiftXleft - $dims['width'] - 9;
-+					$posX = $this->shiftXleft - $dims['width'] - 4;
- 				}
- 				else {
- 					$posX = $this->sizeX + $this->shiftXleft + 12;
-@@ -1602,7 +1605,7 @@
-
- 				imageText(
- 					$this->im,
--					8,
-+					$font_size,
- 					0,
- 					$posX,
- 					$posY,
-@@ -1633,7 +1636,7 @@
-
- 			imageText(
- 				$this->im,
--				8,
-+				$font_size,
- 				0,
- 				$posX,
- 				$this->shiftY + 4,
-@@ -1794,14 +1797,14 @@
- 	}
-
- 	protected function drawLegend() {
--		$leftXShift = 20;
-+		$leftXShift = 65;
- 		$units = array('left' => 0, 'right' => 0);
-
- 		// draw item legend
- 		$legend = new CImageTextTable($this->im, $leftXShift - 5, $this->sizeY + $this->shiftY + $this->legendOffsetY);
- 		$legend->color = $this->getColor($this->graphtheme['textcolor'], 0);
--		$legend->rowheight = 14;
--		$legend->fontsize = 9;
-+		$legend->rowheight = 10;
-+		$legend->fontsize = 11;
-
- 		// item legend table header
- 		$row = array(
-@@ -2842,9 +2845,9 @@
-
- 		$this->fullSizeX = $this->sizeX + $this->shiftXleft + $this->shiftXright + 1;
- 		$this->fullSizeY = $this->sizeY + $this->shiftY + $this->legendOffsetY;
--
-+
- 		if ($this->drawLegend) {
--			$this->fullSizeY += 14 * ($this->num + 1 + (($this->sizeY < 120) ? 0 : count($this->triggers))) + 8;
-+			$this->fullSizeY += 15 * ($this->num + 1 + (($this->sizeY < 120) ? 0 : count($this->triggers))) + 8;
- 		}
-
- 		// if graph height is big enough, we reserve space for percent line legend
-@@ -2997,12 +3000,12 @@
- 			$this->drawLegend();
- 		}
-
--		$this->drawLogo();
-+		//$this->drawLogo();
-
- 		$str = sprintf('%0.2f', microtime(true) - $start_time);
- 		$str = _s('Data from %1$s. Generated in %2$s sec.', $this->dataFrom, $str);
- 		$strSize = imageTextSize(6, 0, $str);
--		imageText($this->im, 6, 0, $this->fullSizeX - $strSize['width'] - 5, $this->fullSizeY - 5, $this->getColor('Gray'), $str);
-+		imageText($this->im, 6, 0, 62, $this->fullSizeY - 5, $this->getColor('Gray'), $str);
-
- 		unset($this->items, $this->data);
-
-diff -ur zabbix-22-test/include/defines.inc.php zabbix-22-custom/include/defines.inc.php
---- zabbix-22-test/include/defines.inc.php	2015-03-10 04:08:58.550155192 -0700
-+++ zabbix-22-custom/include/defines.inc.php	2015-03-10 04:09:54.507240795 -0700
-@@ -36,7 +36,8 @@
- define('ZBX_WIDGET_ROWS', 20);
-
- define('ZBX_FONTPATH',				realpath('fonts')); // where to search for font (GD > 2.0.18)
--define('ZBX_GRAPH_FONT_NAME',		'DejaVuSans'); // font file name
-+//define('ZBX_GRAPH_FONT_NAME',		'DejaVuSans'); // font file name
-+define('ZBX_GRAPH_FONT_NAME', 'calibri');
- define('ZBX_GRAPH_LEGEND_HEIGHT',	120); // when graph height is less then this value, some legend will not show up
-
- define('ZBX_SCRIPT_TIMEOUT',		60); // in seconds
-diff -ur zabbix-22-test/js/gtlc.js zabbix-22-custom/js/gtlc.js
---- zabbix-22-test/js/gtlc.js	2015-03-10 04:08:01.985058510 -0700
-+++ zabbix-22-custom/js/gtlc.js	2015-03-10 04:09:54.891248248 -0700
+diff -ur A/js/gtlc.js B/js/gtlc.js
+--- A/js/gtlc.js	2015-12-09 13:04:10.000000000 +0100
++++ B/js/gtlc.js	2015-12-09 13:23:35.000000000 +0100
 @@ -135,7 +135,7 @@
  				}
-
+ 
  				// url
 -				if (isset('graphtype', obj.objDims) && obj.objDims.graphtype < 2) {
 +				if (isset('graphtype', obj.objDims) && (obj.objDims.graphtype < 2 || obj.objDims.graphtype>=10)) {
  					var graphUrl = new Curl(obj.src);
  					graphUrl.setArgument('width', obj.objDims.width);
-
---- zabbix-orig/js/class.csuggest.js 2015-03-10 02:54:07.000000000 -0700
-+++ zabbix/js/class.csuggest.js      2015-07-25 11:27:56.684480446 -0700
-@@ -365,7 +365,8 @@
-        this.setNeedleByHighLight(e);
-        this.hideSuggests();
-
--       if(this.onSelect(this.dom.input.value) && !GK) this.dom.input.form.submit();
-+//if(this.onSelect(this.dom.input.value) && !GK) this.dom.input.form.submit();
-+       if(this.dom.input.value.length) this.dom.input.form.submit();
- },
+ 
