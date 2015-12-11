@@ -49,7 +49,9 @@ def main():
           i=item.split('.')
           val=queue
           while len(i): val=val.get(i.pop(0),{})
-          if val=={}: continue
+          if val=={}:
+            if '.' in item: continue
+            val=0
           out += "- rabbitmq[{0},{1},{2}] {3}\n".format(queue['vhost'], queue['name'], item, val)
       out += "- rabbitmq.queue.count {0}\n".format(num)
 
