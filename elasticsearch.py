@@ -5,6 +5,7 @@ import json
 import sys
 import os
 import time
+import socket
 
 # Run without parameters to debug zabbix_sender
 # Run with param jvm.uptime_in_millis to trigger trap sending and 
