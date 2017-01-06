@@ -4,9 +4,6 @@
     <date>2017-01-06T20:34:58Z</date>
     <groups>
         <group>
-            <name>SecuriSync US</name>
-        </group>
-        <group>
             <name>Templates</name>
         </group>
     </groups>
@@ -16,9 +13,6 @@
             <name>NFS-client</name>
             <description>Stats for NFS-client</description>
             <groups>
-                <group>
-                    <name>SecuriSync US</name>
-                </group>
                 <group>
                     <name>Templates</name>
                 </group>

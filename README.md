@@ -51,7 +51,10 @@ Collect stats provided by mod_status, your nginx.conf should have this somewhere
 ```
 
 * NFS Client  
-Discover NFS3 and NFS4 mounts and submits stats from /proc/net/rpc/nfs  
+Discover NFS3 and NFS4 mounts and collects stats from `/proc/net/rpc/nfs`  
+
+* iostat  
+Discover block devices and collects reads/writes/utilization for each from `/proc/diskstats`  
 
 * Template App Linux  
 Official template boiled down to important things  
