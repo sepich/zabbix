@@ -20,3 +20,10 @@ http://blog.sepa.spb.ru/2014/12/elasticsearch-internals-monitoring-by.html
 
 * AWS ELB using CloudWatch  
 http://blog.sepa.spb.ru/2015/09/aws-elb-monitoring-by-zabbix-using.html
+
+* NFS Client  
+Discover NFS3 and NFS4 mounts and submits stats from /proc/net/rpc/nfs  
+
+* Template App Linux  
+Official template boiled down to important things  
+
