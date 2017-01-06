@@ -20,6 +20,7 @@ def call_api(path):
     password_mgr = urllib2.HTTPPasswordMgrWithDefaultRealm()
     password_mgr.add_password(None, url, username, password)
     handler = urllib2.HTTPBasicAuthHandler(password_mgr)
+    ssl._create_default_https_context = ssl._create_unverified_context
     return json.loads( urllib2.build_opener(handler).open(url).read() )
 
 def main():
