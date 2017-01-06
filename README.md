@@ -18,6 +18,10 @@ $ cat /etc/cron.d/rabbit-status
 */3 * * * * root /etc/zabbix/rabbitmqctl-status.sh
 */5 * * * * root /etc/zabbix/rabbitmqctl-status.sh queues
 ```
+Unfortunately `rabbitmqctl` lacks some info provided only by REST API, for example - rates. This could be send as traps by adding one more line to cron:  
+```
+* * * * * root /etc/zabbix/rbrates.py
+```
 
 * MySQL  
 http://blog.sepa.spb.ru/2014/12/mysql-internals-monitoring-by-zabbix.html
