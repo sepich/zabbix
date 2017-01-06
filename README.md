@@ -21,6 +21,17 @@ http://blog.sepa.spb.ru/2014/12/elasticsearch-internals-monitoring-by.html
 * AWS ELB using CloudWatch  
 http://blog.sepa.spb.ru/2015/09/aws-elb-monitoring-by-zabbix-using.html
 
+* nginx  
+Collect stats provided by mod_status, your nginx.conf should have this somewhere for 127.0.0.1:  
+```
+        location /nginx_status {
+            stub_status on;
+            access_log off;
+            allow 127.0.0.1;
+            deny all;
+        }
+```
+
 * NFS Client  
 Discover NFS3 and NFS4 mounts and submits stats from /proc/net/rpc/nfs  
 
