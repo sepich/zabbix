@@ -29,8 +29,15 @@ http://blog.sepa.spb.ru/2014/12/mysql-internals-monitoring-by-zabbix.html
 * ElasticSearch  
 http://blog.sepa.spb.ru/2014/12/elasticsearch-internals-monitoring-by.html
 
-* AWS ELB using CloudWatch  
-http://blog.sepa.spb.ru/2015/09/aws-elb-monitoring-by-zabbix-using.html
+* AWS ELB, EFS via CloudWatch  
+http://blog.sepa.spb.ru/2015/09/aws-elb-monitoring-by-zabbix-using.html  
+Migrated to boto3, creds now moved per [docs](https://boto3.readthedocs.io/en/latest/guide/migration.html#installation-configuration) to:  
+```
+cat /var/lib/zabbix/.aws/credentials
+[default]
+aws_access_key_id = XXX
+aws_secret_access_key = XXX
+```
 
 * nginx  
 Collect stats provided by mod_status, your nginx.conf should have this somewhere for 127.0.0.1:  

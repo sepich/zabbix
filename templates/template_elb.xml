@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <zabbix_export>
-    <version>2.0</version>
-    <date>2015-09-22T11:59:37Z</date>
+    <version>3.0</version>
+    <date>2017-01-06T21:45:05Z</date>
     <groups>
         <group>
             <name>Templates</name>
@@ -65,6 +65,50 @@
                     <description/>
                     <item_prototypes>
                         <item_prototype>
+                            <name>{#LOADBALANCERNAME} send traps</name>
+                            <type>10</type>
+                            <snmp_community/>
+                            <multiplier>0</multiplier>
+                            <snmp_oid/>
+                            <key>cloudwatch.py[-e,{#LOADBALANCERNAME},-s,{HOST.HOST}]</key>
+                            <delay>60</delay>
+                            <history>0</history>
+                            <trends>0</trends>
+                            <status>0</status>
+                            <value_type>3</value_type>
+                            <allowed_hosts/>
+                            <units/>
+                            <delta>0</delta>
+                            <snmpv3_contextname/>
+                            <snmpv3_securityname/>
+                            <snmpv3_securitylevel>0</snmpv3_securitylevel>
+                            <snmpv3_authprotocol>0</snmpv3_authprotocol>
+                            <snmpv3_authpassphrase/>
+                            <snmpv3_privprotocol>0</snmpv3_privprotocol>
+                            <snmpv3_privpassphrase/>
+                            <formula>1</formula>
+                            <delay_flex/>
+                            <params/>
+                            <ipmi_sensor/>
+                            <data_type>0</data_type>
+                            <authtype>0</authtype>
+                            <username/>
+                            <password/>
+                            <publickey/>
+                            <privatekey/>
+                            <port/>
+                            <description>This asks for traps to be sent</description>
+                            <inventory_link>0</inventory_link>
+                            <applications>
+                                <application>
+                                    <name>ELB</name>
+                                </application>
+                            </applications>
+                            <valuemap/>
+                            <logtimefmt/>
+                            <application_prototypes/>
+                        </item_prototype>
+                        <item_prototype>
                             <name>{#LOADBALANCERNAME} BackendConnectionErrors</name>
                             <type>2</type>
                             <snmp_community/>
@@ -106,6 +150,7 @@
                             </applications>
                             <valuemap/>
                             <logtimefmt/>
+                            <application_prototypes/>
                         </item_prototype>
                         <item_prototype>
                             <name>{#LOADBALANCERNAME} HealthyHostCount</name>
@@ -149,6 +194,7 @@
                             </applications>
                             <valuemap/>
                             <logtimefmt/>
+                            <application_prototypes/>
                         </item_prototype>
                         <item_prototype>
                             <name>{#LOADBALANCERNAME} HTTPCode_Backend_2XX</name>
@@ -192,6 +238,7 @@
                             </applications>
                             <valuemap/>
                             <logtimefmt/>
+                            <application_prototypes/>
                         </item_prototype>
                         <item_prototype>
                             <name>{#LOADBALANCERNAME} HTTPCode_Backend_3XX</name>
@@ -235,6 +282,7 @@
                             </applications>
                             <valuemap/>
                             <logtimefmt/>
+                            <application_prototypes/>
                         </item_prototype>
                         <item_prototype>
                             <name>{#LOADBALANCERNAME} HTTPCode_Backend_4XX</name>
@@ -278,6 +326,7 @@
                             </applications>
                             <valuemap/>
                             <logtimefmt/>
+                            <application_prototypes/>
                         </item_prototype>
                         <item_prototype>
                             <name>{#LOADBALANCERNAME} HTTPCode_ELB_5XX</name>
@@ -323,6 +372,7 @@ The metric is reported if there are no healthy instances registered to the load 
                             </applications>
                             <valuemap/>
                             <logtimefmt/>
+                            <application_prototypes/>
                         </item_prototype>
                         <item_prototype>
                             <name>{#LOADBALANCERNAME} Latency</name>
@@ -366,6 +416,7 @@ The metric is reported if there are no healthy instances registered to the load 
                             </applications>
                             <valuemap/>
                             <logtimefmt/>
+                            <application_prototypes/>
                         </item_prototype>
                         <item_prototype>
                             <name>{#LOADBALANCERNAME} Requests/min</name>
@@ -409,49 +460,7 @@ The metric is reported if there are no healthy instances registered to the load 
                             </applications>
                             <valuemap/>
                             <logtimefmt/>
-                        </item_prototype>
-                        <item_prototype>
-                            <name>{#LOADBALANCERNAME} send traps</name>
-                            <type>10</type>
-                            <snmp_community/>
-                            <multiplier>0</multiplier>
-                            <snmp_oid/>
-                            <key>cloudwatch.py[-e,{#LOADBALANCERNAME},-s,{HOST.HOST}]</key>
-                            <delay>60</delay>
-                            <history>0</history>
-                            <trends>0</trends>
-                            <status>0</status>
-                            <value_type>3</value_type>
-                            <allowed_hosts/>
-                            <units/>
-                            <delta>0</delta>
-                            <snmpv3_contextname/>
-                            <snmpv3_securityname/>
-                            <snmpv3_securitylevel>0</snmpv3_securitylevel>
-                            <snmpv3_authprotocol>0</snmpv3_authprotocol>
-                            <snmpv3_authpassphrase/>
-                            <snmpv3_privprotocol>0</snmpv3_privprotocol>
-                            <snmpv3_privpassphrase/>
-                            <formula>1</formula>
-                            <delay_flex/>
-                            <params/>
-                            <ipmi_sensor/>
-                            <data_type>0</data_type>
-                            <authtype>0</authtype>
-                            <username/>
-                            <password/>
-                            <publickey/>
-                            <privatekey/>
-                            <port/>
-                            <description>This asks for traps to be sent</description>
-                            <inventory_link>0</inventory_link>
-                            <applications>
-                                <application>
-                                    <name>ELB</name>
-                                </application>
-                            </applications>
-                            <valuemap/>
-                            <logtimefmt/>
+                            <application_prototypes/>
                         </item_prototype>
                         <item_prototype>
                             <name>{#LOADBALANCERNAME} SurgeQueueLength</name>
@@ -495,6 +504,7 @@ The metric is reported if there are no healthy instances registered to the load 
                             </applications>
                             <valuemap/>
                             <logtimefmt/>
+                            <application_prototypes/>
                         </item_prototype>
                         <item_prototype>
                             <name>{#LOADBALANCERNAME} UnHealthyHostCount</name>
@@ -538,17 +548,19 @@ The metric is reported if there are no healthy instances registered to the load 
                             </applications>
                             <valuemap/>
                             <logtimefmt/>
+                            <application_prototypes/>
                         </item_prototype>
                     </item_prototypes>
                     <trigger_prototypes>
                         <trigger_prototype>
                             <expression>{Template ELB:cw[{#LOADBALANCERNAME},BackendConnectionErrors].last()} + {Template ELB:cw[{#LOADBALANCERNAME},HTTPCode_ELB_5XX].last()}&gt;10</expression>
-                            <name>ELB {#LOADBALANCERNAME}: Errors</name>
+                            <name>ELB {#LOADBALANCERNAME}: High errors number returned</name>
                             <url/>
                             <status>0</status>
                             <priority>2</priority>
                             <description/>
                             <type>0</type>
+                            <dependencies/>
                         </trigger_prototype>
                         <trigger_prototype>
                             <expression>{Template ELB:cw[{#LOADBALANCERNAME},UnHealthyHostCount].last()} + {Template ELB:cw[{#LOADBALANCERNAME},HealthyHostCount].last()}=0</expression>
@@ -558,6 +570,7 @@ The metric is reported if there are no healthy instances registered to the load 
                             <priority>1</priority>
                             <description/>
                             <type>0</type>
+                            <dependencies/>
                         </trigger_prototype>
                         <trigger_prototype>
                             <expression>{Template ELB:cw[{#LOADBALANCERNAME},UnHealthyHostCount].last()}&gt;0</expression>
@@ -567,11 +580,12 @@ The metric is reported if there are no healthy instances registered to the load 
                             <priority>2</priority>
                             <description/>
                             <type>0</type>
+                            <dependencies/>
                         </trigger_prototype>
                     </trigger_prototypes>
                     <graph_prototypes>
                         <graph_prototype>
-                            <name>ELB {#LOADBALANCERNAME}: Backend servers</name>
+                            <name>{#LOADBALANCERNAME}: Backend servers</name>
                             <width>900</width>
                             <height>200</height>
                             <yaxismin>0.0000</yaxismin>
@@ -615,7 +629,7 @@ The metric is reported if there are no healthy instances registered to the load 
                             </graph_items>
                         </graph_prototype>
                         <graph_prototype>
-                            <name>ELB {#LOADBALANCERNAME}: Latency</name>
+                            <name>{#LOADBALANCERNAME}: Latency</name>
                             <width>900</width>
                             <height>200</height>
                             <yaxismin>0.0000</yaxismin>
@@ -647,7 +661,7 @@ The metric is reported if there are no healthy instances registered to the load 
                             </graph_items>
                         </graph_prototype>
                         <graph_prototype>
-                            <name>ELB {#LOADBALANCERNAME}: Queue</name>
+                            <name>{#LOADBALANCERNAME}: Queue</name>
                             <width>900</width>
                             <height>200</height>
                             <yaxismin>0.0000</yaxismin>
@@ -679,7 +693,7 @@ The metric is reported if there are no healthy instances registered to the load 
                             </graph_items>
                         </graph_prototype>
                         <graph_prototype>
-                            <name>ELB {#LOADBALANCERNAME}: Requests/min</name>
+                            <name>{#LOADBALANCERNAME}: Requests/min</name>
                             <width>900</width>
                             <height>200</height>
                             <yaxismin>0.0000</yaxismin>
